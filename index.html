@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  Username <input type="text" value="" id="username" style="width: 34.5em;" placeholder="Specific username, only works for top players. (Leave blank for your account.)"/> (Case sensitive!)<br>
+  Username (case sensitive) <input type="text" value="" id="username" style="width: 34.5em;" placeholder="Specific username, only works for top players. (Leave blank for your account.)"/><br>
   <h2 style="margin:1em; margin-bottom: 0.2em; margin-top: 0.2em;">OR</h2>
 Personal token <input id="authorization" style="width:34em;" type="box"
     placeholder="Authorization token (leave blank for specific user). Your data is never shared!"><br><button onClick='localStorage.setItem("authorization",document.getElementById("authorization").value); localStorage.setItem("username",document.getElementById("username").value); location.reload();'>Save</button>
