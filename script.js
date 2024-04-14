@@ -5,7 +5,7 @@ usernameElement.value = localStorage.getItem("username") || "";
 let normalAccount = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM0NmMzNGExYmEyMjQyNGYyZTAwMzIiLCJpbnRlbnQiOiJvQXV0aCIsImlhdCI6MTcwNzM3MTU3Mn0.0JVw6gJhs4R7bQGjr8cKGLE7CLAGvyuMiee7yvpsrWg'
 let accountData;
 let progress = 0
-if (authorizationElement.value !== "" && usernameElement !=="") {
+if (authorizationElement.value !== "" && usernameElement.value !=="") {
   alert("Both a username and a token are set. Please only set one.")
 }
 
