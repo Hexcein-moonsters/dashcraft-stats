@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>replit</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  Username <input type="text" value="" id="username" style="width: 34em;" placeholder="Specific username, only works for top players. (Leave blank for your account.)"/><br>
+  <h2 style="margin:1em; margin-bottom: 0.2em; margin-top: 0.2em;">OR</h2>
+Personal token <input id="authorization" style="width:34em;" type="box"
+    placeholder="Authorization token (leave blank for specific user). Your data is never shared!"><br><button onClick='localStorage.setItem("authorization",document.getElementById("authorization").value); localStorage.setItem("username",document.getElementById("username").value); location.reload();'>Save</button>
+  <hr>
+  <button id="summaryButton" class="button center" onclick="retrieveMaps()">Get Summary</button>
+  <script src="script.js"></script>
+</body>
+
+</html>
