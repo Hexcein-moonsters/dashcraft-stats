@@ -6,10 +6,10 @@ let normalAccount = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWM0NmMzNG
 let accountData;
 let progress = 0
 addEventListener("DOMContentLoaded", (event) => {
-  if (authorizationElement.value !== "" && usernameElement.value !=="") {
-  alert("Both a username and a token are set. Please only set one.")
-}
-  });
+  if (authorizationElement.value !== "" && usernameElement.value !== "") {
+    alert("Both a username and a token are set. Please only set one.")
+  }
+});
 
 const points = []
 
@@ -42,14 +42,14 @@ function getLB(ID, authorization) {
     .then((response) => response.json())
     .then((json) => countPoints(json));
 }
-function getPersonalTime(ID, authorization) {
-  fetch("https://api.dashcraft.io/trackv2/" + ID + "?supportsLaps1=true", {
+function getPersonalTime(ID, authorization, mapper, version) {
+  fetch("https://api.dashcraft.io/trackv2/" + ID + "/leaderboard", {
     headers: {
       'Authorization': authorization
     }
   })
     .then((response) => response.json())
-    .then((json) => countPersonalPoints(json));
+    .then((json) => countPersonalPoints(json, ID, mapper, version));
 }
 function countPoints(data) {
   var lb = data.leaderboard
@@ -62,24 +62,18 @@ function countPoints(data) {
   }
 }
 
-function countPersonalPoints(data) {
-  const myEntry = data.myEntry
-  let myTime;
-  if (myEntry) {
-    myTime = myEntry.time
+function countPersonalPoints(data, ID, mapper, version) {
+  const myBest = data.myBest
+  let myTime, myPlace;
+  if (myBest) {
+    myPlace = myBest.place
+    myTime = myBest.time
   }
-  const leaderboard = data.leaderboard
-  const lastLbTime = data.leaderboard[leaderboard.length - 1].time
   if (myTime) {
-    const lbPlaceKnown = lastLbTime > myTime
-    if (lbPlaceKnown) {
-      points.push({ track: "https://dashcraft.io?t=" + data._id, mapper: data.user.username, time: myTime, position: lb.findIndex(isMe) + 1 })
-    } else {
-      points.push({ track: "https://dashcraft.io?t=" + data._id, mapper: data.user.username, time: myTime, position: "outOfRange" }) // I chose text if your placement isn't known. Because you could be 11th or 1000th.
-    }
+    points.push({ track: "https://dashcraft.io?t=" + ID, trackID: ID, mapper: mapper, time: myTime, position: myPlace + 1, version: version })
     progress++
   } else {
-    console.log("https://dashcraft.io?t=" + data._id + " is not finished")
+    console.log("https://dashcraft.io?t=" + ID + " is not finished")
     progress++ // still add up progress, even if it's not finished
   }
 }
@@ -93,7 +87,7 @@ function isMe(run) {
 
 function retrieveMaps() {
   document.getElementById("summaryButton").disabled = true;
-document.getElementById("summaryButton").classList.add("disabled");
+  document.getElementById("summaryButton").classList.add("disabled");
   const div = document.createElement("div");
   div.id = "loading"
   div.appendChild(document.createTextNode("Loading..."));
@@ -110,7 +104,7 @@ document.getElementById("summaryButton").classList.add("disabled");
           let json1 = json.tracks;
           let IDarr = [];
           for (let a = 0; a < json1.length; a++) {
-            IDarr.push(json1[a]._id);
+            IDarr.push({ trackId: json1[a]._id, mapper: json1[a].user.username, version: json1[a].version });
           }
           return IDarr;
         }));
@@ -135,9 +129,9 @@ document.getElementById("summaryButton").classList.add("disabled");
       }
       for (let i = 0; i < IDarr.length; i++) {
         if (authorization == normalAccount) {
-          getLB(IDarr[i], authorization);
+          getLB(IDarr[i].trackId, authorization);
         } else { // personal token
-          getPersonalTime(IDarr[i], authorization)
+          getPersonalTime(IDarr[i].trackId, authorization, IDarr[i].mapper, IDarr[i].version)
         }
       }
       function checkValues() {
@@ -150,7 +144,7 @@ document.getElementById("summaryButton").classList.add("disabled");
 
       function addPointsHtml() {
         document.getElementById("loading").remove();
-        document.getElementById("summaryButton").disabled = false;  document.getElementById("summaryButton").classList.remove("disabled");
+        document.getElementById("summaryButton").disabled = false; document.getElementById("summaryButton").classList.remove("disabled");
         const newDiv = document.createElement("div");
         newDiv.id = "points";
 
@@ -161,8 +155,8 @@ document.getElementById("summaryButton").classList.add("disabled");
         newDiv.appendChild(document.createElement("br"))
         newDiv.appendChild(document.createElement("br"))
         for (let i = 0; i < points.length; i++) {
-          track = document.createTextNode(points[i].track + " by " + points[i].mapper)
-          track.innerHTML = points[i].track + " by " + points[i].mapper
+          track = document.createElement("a")
+          track.innerHTML = "<p><a href='" + points[i].track + "'>" + points[i].track + "</a> by " + points[i].mapper + "</p>"
           newDiv.appendChild(track);
           list = document.createElement("ul")
           if (points[i].position == "outOfRange") {
@@ -171,6 +165,17 @@ document.getElementById("summaryButton").classList.add("disabled");
             list.innerHTML = "<li>Time: " + points[i].time + "</li>" + "<li>Position: " + points[i].position + "</li>"
           }
           newDiv.appendChild(list)
+          var img = new Image();
+          const trackID = points[i].trackID;
+          const version = points[i].version
+          img.src = `https://cdn.dashcraft.io/v2/prod/track-thumbnail/lg/${trackID}.jpg?v=${version}`;
+          var desiredHeight = 250;
+          var aspectRatio = 1080 / 1920;
+          var desiredWidth = Math.round(desiredHeight / aspectRatio);
+          img.height = desiredHeight;
+          img.width = desiredWidth;
+          newDiv.appendChild(img);
+          newDiv.appendChild(document.createElement("hr"))
         }
         newDiv.appendChild(document.createElement("br"))
         document.body.insertBefore(newDiv, document.getElementById("div1"));
